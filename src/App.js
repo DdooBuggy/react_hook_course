@@ -1,40 +1,26 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
 
-const content = [
-  {
-    tab: "Section 1",
-    content: "I'm the content of the Section 1",
-  },
-  {
-    tab: "Section 2",
-    content: "I'm the content of the Section 2",
-  },
-];
-
-const useTabs = (initialTab, allTabs) => {
-  const [currentIndex, setCurrentIndex] = useState(initialTab);
-  if (!allTabs || !Array.isArray(allTabs)) {
-    return;
-  }
-  return {
-    currentItem: allTabs[currentIndex],
-    changeItem: setCurrentIndex,
+const useBeforeLeave = (onBefore) => {
+  const handle = (event) => {
+    const { clientY } = event;
+    if (clientY <= 0) {
+      onBefore();
+    }
   };
+  useEffect(() => {
+    if (typeof onBefore !== "function") {
+      return;
+    }
+    document.addEventListener("mouseleave", handle);
+    return () => document.removeEventListener("mouseleave", handle);
+  }, []);
 };
 
 const App = () => {
-  const { currentItem, changeItem } = useTabs(0, content);
-  return (
-    <div className="App">
-      {content.map((section, index) => (
-        <button onClick={() => changeItem(index)} key={section.tab}>
-          {section.tab}
-        </button>
-      ))}
-      <div>{currentItem.content}</div>
-    </div>
-  );
+  const begForLife = () => console.log("Pls don't leave");
+  useBeforeLeave(begForLife);
+  return <div className="App"></div>;
 };
 
 export default App;
