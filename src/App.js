@@ -1,26 +1,35 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 
-const useBeforeLeave = (onBefore) => {
-  const handle = (event) => {
-    const { clientY } = event;
-    if (clientY <= 0) {
-      onBefore();
+const useNotification = (title, options) => {
+  if (!("Notification" in window)) {
+    return;
+  }
+  const fireNotification = () => {
+    if (Notification.permission !== "granted") {
+      Notification.requestPermission().then((permission) => {
+        if (permission === "granted") {
+          new Notification(title, options);
+        } else {
+          return;
+        }
+      });
+    } else {
+      new Notification(title, options);
     }
   };
-  useEffect(() => {
-    if (typeof onBefore !== "function") {
-      return;
-    }
-    document.addEventListener("mouseleave", handle);
-    return () => document.removeEventListener("mouseleave", handle);
-  }, []);
+  return fireNotification;
 };
 
 const App = () => {
-  const begForLife = () => console.log("Pls don't leave");
-  useBeforeLeave(begForLife);
-  return <div className="App"></div>;
+  const triggerNotification = useNotification("Do you need any help?", {
+    body: "Yes",
+  });
+  return (
+    <div className="App">
+      <button onClick={triggerNotification}>Btn</button>
+    </div>
+  );
 };
 
 export default App;
